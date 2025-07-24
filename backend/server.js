@@ -15,9 +15,7 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-
 connectDB();
-
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
