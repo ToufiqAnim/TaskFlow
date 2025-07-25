@@ -22,8 +22,22 @@ const loginUser = async (req, res) => {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
 };
-const getuserProfile = async (req, res) => {};
-const updateuserProfile = async (req, res) => {};
+const getuserProfile = async (req, res) => {
+  try {
+    const user = await AuthServices.getUserProfile(req.user.id);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+const updateuserProfile = async (req, res) => {
+  try {
+    const user = await AuthServices.updateUserProfile(req.user.id, req.body);
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Update Failed", error: error.message });
+  }
+};
 
 export const AuthController = {
   signupUser,

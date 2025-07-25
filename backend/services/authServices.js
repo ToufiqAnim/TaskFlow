@@ -57,4 +57,40 @@ const loginUser = async ({ email, password }) => {
     token: generateToken(user._id),
   };
 };
-export const AuthServices = { signupUser, loginUser };
+const getUserProfile = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  return user;
+};
+const updateUserProfile = async (userId, updateData) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  // Update fields based on updateData
+  user.name = updateData.name || user.name;
+  user.email = updateData.email || user.email;
+
+  if (updateData.password) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(updateData.password, salt);
+  }
+  const upateUser = await user.save();
+  return {
+    _id: upateUser._id,
+    name: upateUser.name,
+    email: upateUser.email,
+    profileImageUrl: upateUser.profileImageUrl,
+    role: upateUser.role,
+    token: generateToken(upateUser._id),
+  };
+};
+
+export const AuthServices = {
+  signupUser,
+  loginUser,
+  getUserProfile,
+  updateUserProfile,
+};
