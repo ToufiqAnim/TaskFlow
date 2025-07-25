@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User";
+import User from "../models/User.js";
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "10d" });
 };
 
-const signup = async ({
+const signupUser = async ({
   name,
   email,
   password,
@@ -23,7 +23,7 @@ const signup = async ({
   }
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const user = User.create({
+  const user = await User.create({
     name,
     email,
     password: hashedPassword,
@@ -39,4 +39,22 @@ const signup = async ({
     token: generateToken(user._id),
   };
 };
-export const AuthServices = { signup };
+const loginUser = async ({ email, password }) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatched) {
+    throw new Error("Invalid password");
+  }
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    profileImageUrl: user.profileImageUrl,
+    role: user.role,
+    token: generateToken(user._id),
+  };
+};
+export const AuthServices = { signupUser, loginUser };
