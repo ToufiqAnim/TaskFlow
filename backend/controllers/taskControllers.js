@@ -49,12 +49,16 @@ const createTask = async (req, res) => {
 };
 const getAllTasks = async (req, res) => {
   try {
+    const task = await TaskService.getAllTasks();
+    res.status(200).json({ task });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 const getTaskById = async (req, res) => {
   try {
+    const task = await TaskService.getTaskById(req.params.id);
+    res.status(200).json(task);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

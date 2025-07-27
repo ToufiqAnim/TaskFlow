@@ -20,8 +20,20 @@ const createTask = async ({
   });
   return task;
 };
-const getAllTasks = () => {};
-const getTaskById = () => {};
+const getAllTasks = async () => {
+  const task = await Task.find()
+    .populate("assignedTo", "-password")
+    .populate("createdBy", "name email")
+    .sort({ createdAt: -1 });
+  return task;
+};
+const getTaskById = async (taskId) => {
+  const task = await Task.findById(taskId);
+  if (!task) {
+    throw new Error("User not found");
+  }
+  return task;
+};
 const updateTask = () => {};
 const deleteTask = () => {};
 const getDashboardData = () => {};

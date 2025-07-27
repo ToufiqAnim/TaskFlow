@@ -5,7 +5,7 @@ import { AuthMiddleware } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // Task Management Routes
-router.get("/", AuthMiddleware.auth, TaskController.createTask);
+router.get("/", AuthMiddleware.auth, TaskController.getAllTasks);
 router.get("/:id", AuthMiddleware.auth, TaskController.getTaskById);
 router.post(
   "/",
