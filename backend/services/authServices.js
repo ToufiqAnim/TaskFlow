@@ -17,7 +17,7 @@ const signupUser = async ({
   if (existingUser) {
     throw new Error("User already exists");
   }
-  let role = "admin";
+  let role = "member";
   if (adminInviteToken && adminInviteToken == process.env.ADMIN_INVITE_TOKEN) {
     role = "admin";
   }
