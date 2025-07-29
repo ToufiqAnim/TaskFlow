@@ -98,13 +98,55 @@ export const getAllTasks = async (user, query) => {
   };
 };
 const getTaskById = async (taskId) => {
-  const task = await Task.findById(taskId);
+  const task = await Task.findById(taskId).populate(
+    "assignedTo",
+    "name email profileImageUrl"
+  );
   if (!task) {
     throw new Error("User not found");
   }
   return task;
 };
-const updateTask = () => {};
+const updateTask = async (taskId, updateData) => {
+  const task = await Task.findById(taskId).populate(
+    "assignedTo",
+    "name email profileImageUrl"
+  );
+  if (!task) {
+    throw new Error("Task not found");
+  }
+
+  if (!task) {
+    throw new Error("User not found");
+  }
+  const {
+    title,
+    description,
+    assignedTo,
+    dueDate,
+    priority,
+    attachments,
+    todoChecklist,
+  } = updateData;
+  task.title = title ?? task.title;
+  task.description = description ?? task.description;
+  task.assignedTo = assignedTo ?? task.assignedTo;
+  task.dueDate = dueDate ?? task.dueDate;
+  task.priority = priority ?? task.priority;
+  task.attachments = attachments ?? task.attachments;
+  task.todoChecklist = todoChecklist ?? task.todoChecklist;
+  if (assignedTo !== undefined) {
+    if (!Array.isArray(assignedTo)) {
+      const error = new Error("assignedTo must be an array of user IDs");
+      error.statusCode = 400;
+      throw error;
+    }
+    task.assignedTo = assignedTo;
+  }
+
+  const updatedTask = await task.save();
+  return updatedTask;
+};
 const deleteTask = () => {};
 const getDashboardData = () => {};
 const getUserDashboardData = () => {};

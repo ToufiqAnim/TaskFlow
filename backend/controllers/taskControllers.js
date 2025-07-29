@@ -66,6 +66,8 @@ const getTaskById = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
+    const updatedTask = await TaskService.updateTask(req.params.id, req.body);
+    res.json({ message: "Task updated successfully", updatedTask });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
