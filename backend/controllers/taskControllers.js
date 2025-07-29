@@ -49,8 +49,8 @@ const createTask = async (req, res) => {
 };
 const getAllTasks = async (req, res) => {
   try {
-    const task = await TaskService.getAllTasks();
-    res.status(200).json({ task });
+    const data = await TaskService.getAllTasks(req.user, req.query);
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
