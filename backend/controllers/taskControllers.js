@@ -24,6 +24,7 @@ const createTask = async (req, res) => {
       priority,
       attachments,
       todoCheckList,
+      status,
     } = req.body;
     if (!Array.isArray(assignedTo)) {
       return res
@@ -38,6 +39,8 @@ const createTask = async (req, res) => {
       priority,
       attachments,
       todoCheckList,
+      createdBy: req.user._id,
+      status,
     });
     res.status(201).json({
       message: "Task created successfully",
@@ -86,6 +89,11 @@ const updateTaskChecklist = async (req, res) => {
 };
 const deleteTask = async (req, res) => {
   try {
+    const deletedTask = await TaskService.deleteTask(req.params.id);
+    res.status(200).json({
+      message: "Task deleted successfully",
+      deletedTask,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

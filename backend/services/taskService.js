@@ -8,6 +8,8 @@ const createTask = async ({
   priority,
   attachments,
   todoCheckList,
+  status,
+  createdBy,
 }) => {
   const task = await Task.create({
     title,
@@ -17,6 +19,8 @@ const createTask = async ({
     priority,
     attachments,
     todoCheckList,
+    status,
+    createdBy,
   });
   return task;
 };
@@ -147,7 +151,15 @@ const updateTask = async (taskId, updateData) => {
   const updatedTask = await task.save();
   return updatedTask;
 };
-const deleteTask = () => {};
+const deleteTask = async (taskId) => {
+  const deletedTask = await Task.findByIdAndDelete(taskId);
+  if (!deletedTask) {
+    throw new Error("Task not found");
+  }
+
+  return deletedTask;
+};
+
 const getDashboardData = () => {};
 const getUserDashboardData = () => {};
 const updateTaskStatus = () => {};
