@@ -162,7 +162,28 @@ const deleteTask = async (taskId) => {
 
 const getDashboardData = () => {};
 const getUserDashboardData = () => {};
-const updateTaskStatus = () => {};
+const updateTaskStatus = async (taskId, user, newStatus) => {
+  const task = await Task.findById(taskId);
+  if (!task) throw new Error("Task not found");
+
+  const isAssigned = task.assignedTo.some(
+    (userId) => userId.toString() === user._id.toString()
+  );
+
+  if (!isAssigned && user.role !== "admin") {
+    throw new Error("Not authorized");
+  }
+
+  task.status = newStatus || task.status;
+
+  if (task.status === "Completed") {
+    task.todoChecklist.forEach((item) => (item.completed = true));
+    task.progress = 100;
+  }
+
+  await task.save();
+  return task;
+};
 const updateTaskChecklist = () => {};
 
 export const TaskService = {
