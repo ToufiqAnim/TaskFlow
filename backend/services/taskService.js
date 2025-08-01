@@ -184,7 +184,45 @@ const updateTaskStatus = async (taskId, user, newStatus) => {
   await task.save();
   return task;
 };
-const updateTaskChecklist = () => {};
+const updateTaskChecklist = async (taskId, user, todoCheckList) => {
+  const task = await Task.findById(taskId);
+  if (!task) throw new Error("Task not found");
+
+  const isAssigned = task.assignedTo.some(
+    (userId) => userId.toString() === user._id.toString()
+  );
+
+  if (!isAssigned && user.role !== "admin") {
+    throw new Error("Not authorized");
+  }
+
+  task.todoChecklist = todoCheckList;
+
+  const completedCount = task.todoChecklist.filter(
+    (item) => item.completed
+  ).length;
+  const totalItems = task.todoChecklist.length;
+
+  task.progress =
+    totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+
+  if (task.progress === 100) {
+    task.status = "Completed";
+  } else if (task.progress > 0) {
+    task.status = "In Progress";
+  } else {
+    task.status = "Pending";
+  }
+
+  await task.save();
+
+  const updatedTask = await Task.findById(taskId).populate(
+    "assignedTo",
+    "name email profileImageUrl"
+  );
+
+  return updatedTask;
+};
 
 export const TaskService = {
   createTask,

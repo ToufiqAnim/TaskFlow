@@ -116,6 +116,12 @@ export const updateTaskStatus = async (req, res) => {
 
 const updateTaskChecklist = async (req, res) => {
   try {
+    const updatedtask = await TaskService.updateTaskChecklist(
+      req.params.id,
+      req.user,
+      req.body.todoChecklist
+    );
+    res.json({ message: "Task checklist updated", updatedtask });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
