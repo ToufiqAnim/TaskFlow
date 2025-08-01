@@ -3,6 +3,22 @@ import { TaskService } from "../services/taskService.js";
 
 const getDashboardData = async (req, res) => {
   try {
+    const totalTask = await Task.countDocuments();
+    const pendingTask = await Task.countDocuments({ status: "Pending" });
+    const completedTask = await Task.countDocuments({ status: "Completed" });
+    const overDuetask = await Task.countDocuments({
+      status: { $ne: "Completed" },
+      dueDate: { $lt: new Date() },
+    });
+    const taskStatus = ["Pending", "In Progress", "Completed"];
+    const taskDistribution = await Task.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
