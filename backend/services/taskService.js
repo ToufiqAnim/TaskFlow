@@ -24,7 +24,7 @@ const createTask = async ({
   });
   return task;
 };
-export const getAllTasks = async (user, query) => {
+const getAllTasks = async (user, query) => {
   const {
     status,
     priority,
@@ -67,7 +67,7 @@ export const getAllTasks = async (user, query) => {
   // Checklist Count
   tasks = await Promise.all(
     tasks.map((task) => {
-      const completedTodoCount = task.todoChecklist.filter(
+      const completedTodoCount = task.todoCheckList.filter(
         (item) => item.completed
       ).length;
       return { ...task._doc, completedTodoCount };
@@ -130,7 +130,7 @@ const updateTask = async (taskId, updateData) => {
     dueDate,
     priority,
     attachments,
-    todoChecklist,
+    todoCheckList,
   } = updateData;
   task.title = title ?? task.title;
   task.description = description ?? task.description;
@@ -138,7 +138,7 @@ const updateTask = async (taskId, updateData) => {
   task.dueDate = dueDate ?? task.dueDate;
   task.priority = priority ?? task.priority;
   task.attachments = attachments ?? task.attachments;
-  task.todoChecklist = todoChecklist ?? task.todoChecklist;
+  task.todoCheckList = todoCheckList ?? task.todoCheckList;
   if (assignedTo !== undefined) {
     if (!Array.isArray(assignedTo)) {
       const error = new Error("assignedTo must be an array of user IDs");
@@ -177,7 +177,7 @@ const updateTaskStatus = async (taskId, user, newStatus) => {
   task.status = newStatus || task.status;
 
   if (task.status === "Completed") {
-    task.todoChecklist.forEach((item) => (item.completed = true));
+    task.todoCheckList.forEach((item) => (item.completed = true));
     task.progress = 100;
   }
 
@@ -196,12 +196,12 @@ const updateTaskChecklist = async (taskId, user, todoCheckList) => {
     throw new Error("Not authorized");
   }
 
-  task.todoChecklist = todoCheckList;
+  task.todoCheckList = todoCheckList;
 
-  const completedCount = task.todoChecklist.filter(
+  const completedCount = task.todoCheckList.filter(
     (item) => item.completed
   ).length;
-  const totalItems = task.todoChecklist.length;
+  const totalItems = task.todoCheckList.length;
 
   task.progress =
     totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
