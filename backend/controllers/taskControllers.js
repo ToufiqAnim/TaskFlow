@@ -10,19 +10,52 @@ const getDashboardData = async (req, res) => {
       status: { $ne: "Completed" },
       dueDate: { $lt: new Date() },
     });
+
     const taskStatus = ["Pending", "In Progress", "Completed"];
-    const taskDistribution = await Task.aggregate([
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 },
-        },
-      },
+    const taskDistributionRaw = await Task.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
+    const taskDistribution = taskStatus.reduce((acc, status) => {
+      const formattedKey = status.replace(/\s+/g, "");
+      acc[formattedKey] =
+        taskDistributionRaw.find((item) => item._id === status)?.count || 0;
+      return acc;
+    }, {});
+    taskDistribution["All"] = totalTask;
+
+    const taskPriorities = ["Low", "Medium", "High"];
+    const taskPriorityLevelRaw = await Task.aggregate([
+      { $group: { _id: "$priority", count: { $sum: 1 } } },
+    ]);
+    const taskPriorityLevels = taskPriorities.reduce((acc, priority) => {
+      acc[priority] =
+        taskPriorityLevelRaw.find((item) => item._id === priority)?.count || 0;
+      return acc;
+    }, {});
+
+    const recentTask = await Task.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select("title status priority dueDate createdAt");
+
+    res.status(200).json({
+      statics: {
+        totalTask,
+        pendingTask,
+        completedTask,
+        overDuetask,
+      },
+      charts: {
+        taskDistribution,
+        taskPriorityLevels,
+      },
+      recentTask,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 const getUserDashboardData = async (req, res) => {
   try {
   } catch (error) {
