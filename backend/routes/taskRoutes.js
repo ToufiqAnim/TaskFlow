@@ -4,6 +4,18 @@ import { AuthMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+//Dashboard Data routes
+router.get(
+  "/dashboard-data",
+  AuthMiddleware.auth,
+  TaskController.getDashboardData
+);
+router.get(
+  "/user-dashboard-data",
+  AuthMiddleware.auth,
+  TaskController.getUserDashboardData
+);
+
 // Task Management Routes
 router.get("/", AuthMiddleware.auth, TaskController.getAllTasks);
 router.get("/:id", AuthMiddleware.auth, TaskController.getTaskById);
@@ -26,18 +38,6 @@ router.delete(
   AuthMiddleware.auth,
   AuthMiddleware.adminAuth,
   TaskController.deleteTask
-);
-
-//Dashboard Data routes
-router.get(
-  "/dashboard-data",
-  AuthMiddleware.auth,
-  TaskController.getDashboardData
-);
-router.get(
-  "/user-dashboard-data",
-  AuthMiddleware.auth,
-  TaskController.getUserDashboardData
 );
 
 export default router;

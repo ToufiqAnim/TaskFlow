@@ -160,7 +160,57 @@ const deleteTask = async (taskId) => {
   return deletedTask;
 };
 
-const getDashboardData = () => {};
+const getDashboardData = async () => {
+  // Taks Count
+  const [totalTask, pendingTask, completedTask, overDuetask] =
+    await Promise.all([
+      Task.countDocuments(),
+      Task.countDocuments({ status: "Pending" }),
+      Task.countDocuments({ status: "Completed" }),
+      Task.countDocuments({ dueDate: { $lt: new Date() } }),
+    ]);
+  // Task Distribution By Status
+  const taskStatus = ["Pending", "In Progress", "Completed"];
+  const taskStatusCount = await Task.aggregate([
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+  const taskDistribution = taskStatus.reduce((acc, status) => {
+    const key = status.replace(/\s+/g, "");
+    acc[key] = taskStatusCount.find((item) => item._id === status)?.count || 0;
+    return acc;
+  }, {});
+  taskDistribution["All"] = totalTask;
+
+  // Task Distribution By Priority
+  const taskPriorities = ["Low", "Medium", "High"];
+  const taskPriorityCount = await Task.aggregate([
+    { $group: { _id: "$priority", count: { $sum: 1 } } },
+  ]);
+  const taskPriorityLevels = taskPriorities.reduce((acc, priority) => {
+    acc[priority] =
+      taskPriorityCount.find((item) => item._id === priority)?.count || 0;
+    return acc;
+  }, {});
+  //fetch 10 recent task
+  const recentTasks = await Task.find()
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate("assignedTo", "name email profileImageUrl");
+  return {
+    statics: {
+      totalTask,
+      pendingTask,
+      completedTask,
+      overDuetask,
+    },
+    charts: {
+      taskDistribution,
+      taskPriorityLevels,
+    },
+    recentTasks,
+  };
+};
+
 const getUserDashboardData = () => {};
 const updateTaskStatus = async (taskId, user, newStatus) => {
   const task = await Task.findById(taskId);
