@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import { AuthServices } from "../services/authServices.js";
 
 const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "10d" });
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 const signupUser = async (req, res) => {
   try {

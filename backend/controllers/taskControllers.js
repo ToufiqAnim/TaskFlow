@@ -3,54 +3,8 @@ import { TaskService } from "../services/taskService.js";
 
 const getDashboardData = async (req, res) => {
   try {
-    const totalTask = await Task.countDocuments();
-    const pendingTask = await Task.countDocuments({ status: "Pending" });
-    const completedTask = await Task.countDocuments({ status: "Completed" });
-    const overDuetask = await Task.countDocuments({
-      status: { $ne: "Completed" },
-      dueDate: { $lt: new Date() },
-    });
-
-    const taskStatus = ["Pending", "In Progress", "Completed"];
-    const taskDistributionRaw = await Task.aggregate([
-      { $group: { _id: "$status", count: { $sum: 1 } } },
-    ]);
-    const taskDistribution = taskStatus.reduce((acc, status) => {
-      const formattedKey = status.replace(/\s+/g, "");
-      acc[formattedKey] =
-        taskDistributionRaw.find((item) => item._id === status)?.count || 0;
-      return acc;
-    }, {});
-    taskDistribution["All"] = totalTask;
-
-    const taskPriorities = ["Low", "Medium", "High"];
-    const taskPriorityLevelRaw = await Task.aggregate([
-      { $group: { _id: "$priority", count: { $sum: 1 } } },
-    ]);
-    const taskPriorityLevels = taskPriorities.reduce((acc, priority) => {
-      acc[priority] =
-        taskPriorityLevelRaw.find((item) => item._id === priority)?.count || 0;
-      return acc;
-    }, {});
-
-    const recentTask = await Task.find()
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select("title status priority dueDate createdAt");
-
-    res.status(200).json({
-      statics: {
-        totalTask,
-        pendingTask,
-        completedTask,
-        overDuetask,
-      },
-      charts: {
-        taskDistribution,
-        taskPriorityLevels,
-      },
-      recentTask,
-    });
+    const data = await TaskService.getDashboardData();
+    res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
