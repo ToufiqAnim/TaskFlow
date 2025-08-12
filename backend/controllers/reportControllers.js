@@ -1,8 +1,9 @@
-export { ReportService } from "../services/reportService.js";
+import { ReportService } from "../services/reportService.js";
+
 const exportTasksReport = async (req, res) => {
   try {
     const workBook = await ReportService.exportTasksReport();
-    res.status(200).json(data);
+
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -21,8 +22,21 @@ const exportTasksReport = async (req, res) => {
 };
 const exportUsersReport = async (req, res) => {
   try {
-    res.status(200).json(data);
+    const workBook = await ReportService.exportUsersReport();
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=user-report.xlsx"
+    );
+
+    await workBook.xlsx.write(res);
+    res.end();
   } catch (error) {
+    console.error("Error exporting users report:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

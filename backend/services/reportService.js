@@ -37,21 +37,67 @@ const exportTasksReport = async () => {
   return workBook;
 };
 const exportUsersReport = async () => {
+  // 1️⃣ Get all users
   const users = await User.find().select("name email _id").lean();
-  const userTask = await Task.find().populate("assignedTo", "name email _id");
-  const userTaskMap = {};
-  users.forEach((user) => {
-userTaskMap[user._id]={
-  name:user.name,
-  email:user.email,
-taskCount:0,
-completedTaskCount:0,
-inProgressTaskCount:0,
-pendingTaskCount:0,
-};
-};
-  
-}
+
+  // 2️⃣ Prepare a task stats map for each user
+  const userTaskMap = Object.fromEntries(
+    users.map((user) => [
+      user._id,
+      {
+        name: user.name,
+        email: user.email,
+        taskCount: 0,
+        completedTasks: 0,
+        inProgressTasks: 0,
+        pendingTasks: 0,
+      },
+    ])
+  );
+
+  // 3️⃣ Get all tasks with assigned users
+  const userTasks = await Task.find()
+    .populate("assignedTo", "name email _id")
+    .lean();
+
+  // 4️⃣ Fill in task stats
+  userTasks.forEach((task) => {
+    const assignedUser = task.assignedTo;
+    if (assignedUser && userTaskMap[assignedUser._id]) {
+      const stats = userTaskMap[assignedUser._id];
+      stats.taskCount++;
+
+      switch (task.status) {
+        case "Completed":
+          stats.completedTasks++;
+          break;
+        case "In Progress":
+          stats.inProgressTasks++;
+          break;
+        case "Pending":
+          stats.pendingTasks++;
+          break;
+      }
+    }
+  });
+
+  // 5️⃣ Create Excel workbook
+  const workBook = new excelJS.Workbook();
+  const workSheet = workBook.addWorksheet("User Report");
+
+  workSheet.columns = [
+    { header: "Name", key: "name", width: 30 },
+    { header: "Email", key: "email", width: 50 },
+    { header: "Total Assigned Task", key: "taskCount", width: 20 },
+    { header: "Completed Task", key: "completedTasks", width: 20 },
+    { header: "In Progress Task", key: "inProgressTasks", width: 20 },
+    { header: "Pending Task", key: "pendingTasks", width: 20 },
+  ];
+
+  // 6️⃣ Add user rows
+  Object.values(userTaskMap).forEach((user) => workSheet.addRow(user));
+
+  return workBook;
 };
 
-export const ReportService = { exportTasksReport };
+export const ReportService = { exportTasksReport, exportUsersReport };
