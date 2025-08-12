@@ -1,5 +1,6 @@
 import Task from "../models/Tasks.js";
 import excelJS from "exceljs";
+import User from "../models/User.js";
 const exportTasksReport = async () => {
   const tasks = await Task.find().populate(
     "assignedTo",
@@ -34,6 +35,23 @@ const exportTasksReport = async () => {
     });
   });
   return workBook;
+};
+const exportUsersReport = async () => {
+  const users = await User.find().select("name email _id").lean();
+  const userTask = await Task.find().populate("assignedTo", "name email _id");
+  const userTaskMap = {};
+  users.forEach((user) => {
+userTaskMap[user._id]={
+  name:user.name,
+  email:user.email,
+taskCount:0,
+completedTaskCount:0,
+inProgressTaskCount:0,
+pendingTaskCount:0,
+};
+};
+  
+}
 };
 
 export const ReportService = { exportTasksReport };
